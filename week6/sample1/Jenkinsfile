@@ -8,11 +8,10 @@ pipeline {
                steps {
                     sh "pwd" 
                         dir('week6/sample1'){
-                         sh "pwd"  
+                            sh "pwd" 
+                            sh "chmod +x gradlew"
+                            sh "./gradlew compileJava"  
                         }
-                    sh "pwd"
-                        sh "chmod +x gradlew"
-                    sh "./gradlew compileJava"
                }
           }
           stage("Unit test") {
