@@ -15,59 +15,90 @@ pipeline {
                }
           }
           stage("Unit test") {
+              when {
+                not {branch 'main'}
+              }
                steps {
-                    sh "./gradlew test"
+                    sh "echo Unit test not main branch"
+                   dir('week6/sample1'){
+                        sh "./gradlew test"
+                   }
                }
           }
           stage("Code coverage") {
+              when {
+                not { branch 'main' }
+              }
                steps {
+                   dir('week6/sample1'){
                     sh "./gradlew jacocoTestReport"
                     sh "./gradlew jacocoTestCoverageVerification"
+                   }
                }
           }
           stage("Static code analysis") {
                steps {
+                   dir('week6/sample1'){ 
                     sh "./gradlew checkstyleMain"
+                   }
                }
           }
           stage("Package") {
+              when { branch 'main'}
                steps {
+                   dir('week6/sample1'){
                     sh "./gradlew build"
+                   }
                }
           }
 
           stage("Update version") {
+              when { branch 'main'}
                steps {
+                   dir('week6/sample1'){
                     sh "sed  -i 's/{{VERSION}}/${BUILD_TIMESTAMP}/g' calculator.yaml"
+                   }
                }
           }
           
           stage("Deploy to staging") {
+              when { branch 'main'}
                steps {
+                    sh "echo branch main deploy"
+                        dir('week6/sample1'){
                     sh "kubectl config use-context staging"
                     sh "kubectl apply -f hazelcast.yaml"
                     sh "kubectl apply -f calculator.yaml"
-               }
+                     }
+                }
           }
 
           stage("Acceptance test") {
+              when { branch 'main'}
                steps {
+                   dir('week6/sample1') {
                     sleep 60
-                    sh "chmod +x acceptance-test.sh && ./acceptance-test.sh"
-               }
-          }
-
+                    sh "chmod +x acceptance-test.sh && ./acceptance-test.sh"    
+                   }
+                 }
+            }
           stage("Release") {
+              when { branch 'main'}
                steps {
+                   dir('week6/sampl1'){
                     sh "kubectl config use-context production"
                     sh "kubectl apply -f hazelcast.yaml"
                     sh "kubectl apply -f calculator.yaml"
+                   }
                }
           }
           stage("Smoke test") {
+              when { branch 'main'}
               steps {
                   sleep 60
+                      dir('week6/sample1'){    
                   sh "chmod +x smoke-test.sh && ./smoke-test.sh"
+                      }
               }
           }
      }
